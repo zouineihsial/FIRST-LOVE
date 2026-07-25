@@ -1,27 +1,28 @@
-    <!DOCTYPE HTML>
+
+<!DOCTYPE HTML>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Glowing Heartbeat</title>
-    <style>
-        html, body {
-            height: 100%;
-            padding: 0;
-            margin: 0;
-            background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
-            overflow: hidden;
-        }
-        canvas {
-            display: block;
-        }
-    </style>
+<meta charset="UTF-8">
+<title>Lighter & Princess Style Heartbeat</title>
+<style>
+    html, body {
+        height: 100%;
+        margin: 0;
+        padding: 0;
+        background: radial-gradient(circle at center, #1a1a1a 0%, #000 100%);
+        overflow: hidden;
+    }
+    canvas {
+        display: block;
+    }
+</style>
 </head>
 <body>
-<canvas id="heartCanvas"></canvas>
+<canvas id="scene"></canvas>
 
 <script>
 (function() {
-    const canvas = document.getElementById('heartCanvas');
+    const canvas = document.getElementById('scene');
     const ctx = canvas.getContext('2d');
 
     function resizeCanvas() {
@@ -33,7 +34,44 @@
 
     let t = 0;
 
-    function drawHeart(scale, glow) {
+    // Sparkle particles
+    const sparkles = [];
+    const sparkleCount = 80;
+    for (let i = 0; i < sparkleCount; i++) {
+        sparkles.push({
+            x: Math.random() * canvas.width,
+            y: Math.random() * canvas.height,
+            r: Math.random() * 2 + 1,
+            alpha: Math.random(),
+            speed: Math.random() * 0.5 + 0.2
+        });
+    }
+
+    function drawSparkles() {
+        ctx.save();
+        ctx.fillStyle = 'rgba(255, 192, 203, 0.8)'; // soft pink sparkles
+        for (let s of sparkles) {
+            ctx.globalAlpha = s.alpha;
+            ctx.beginPath();
+            ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Twinkle effect
+            s.alpha += (Math.random() - 0.5) * 0.05;
+            if (s.alpha < 0) s.alpha = 0;
+            if (s.alpha > 1) s.alpha = 1;
+
+            // Slow drift
+            s.y -= s.speed;
+            if (s.y < -5) {
+                s.y = canvas.height + 5;
+                s.x = Math.random() * canvas.width;
+            }
+        }
+        ctx.restore();
+    }
+
+    function drawHeart(scale) {
         ctx.save();
         ctx.scale(scale, scale);
         ctx.beginPath();
@@ -42,10 +80,10 @@
         ctx.bezierCurveTo(-150, -20, -50, -100, 0, -50);
         ctx.closePath();
 
-        // Glow effect
-        ctx.shadowColor = glow;
-        ctx.shadowBlur = 40;
-        ctx.fillStyle = glow;
+        // Glow
+        ctx.shadowColor = 'rgba(255, 105, 180, 0.9)'; // hot pink glow
+        ctx.shadowBlur = 60;
+        ctx.fillStyle = 'rgba(255, 182, 193, 1)'; // light pink fill
         ctx.fill();
         ctx.restore();
     }
@@ -53,15 +91,14 @@
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
 
+        // Background sparkles
+        drawSparkles();
+
+        // Heartbeat
         ctx.save();
         ctx.translate(canvas.width / 2, canvas.height / 2);
-
-        // Smooth heartbeat scale
-        const scale = 1 + 0.08 * Math.sin(t);
-        const glowColor = `hsl(${(Math.sin(t) * 10 + 350) % 360}, 80%, 60%)`;
-
-        drawHeart(scale * 2, glowColor);
-
+        const scale = 2 * (1 + 0.06 * Math.sin(t));
+        drawHeart(scale);
         ctx.restore();
 
         t += 0.08;
